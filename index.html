@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en-nz">
+    <head>
+        <title>cover maker</title>
+        <style>
+            canvas {
+                border: 1px black solid;
+                cursor: grab;
+            }
+            canvas.dragging {
+                cursor: grabbing;
+            }
+        </style>
+    </head>
+    <body id="body">
+        <input type="file" id="imageLoader" name="imageLoader"/><br/>
+        <button id="zoomIn">zoom background in</button>
+        <button id="zoomOut">zoom background out</button><br/>
+        Title colour: <input type="color" id="titleColourPicker" name="titleColourPicker" value="#000000" /><br/>
+        <canvas id="imageCanvas" width="500" height="655"></canvas>
+        <script>
+            var canvas = document.getElementById('imageCanvas');
+            var ctx = canvas.getContext('2d');
+
+            document.getElementById('imageLoader').addEventListener('change', handleImage, false);
+            document.getElementById('zoomIn').addEventListener('click', handleZoomIn, false);
+            document.getElementById('zoomOut').addEventListener('click', handleZoomOut, false);
+            // we do the mousedown event on the canvas for when they start dragging the background image
+            // but we do the mouse up and mouse move for the whole document, because they might
+            // drag the mouse off the canvas and then we wouldn't see the event
+            canvas.addEventListener('mousedown', handleMouseDown, false);
+            document.getElementById('body').addEventListener('mouseup', handleMouseUp, false);
+            document.getElementById('body').addEventListener('mousemove', handleMouseMove, false);
+            document.getElementById('titleColourPicker').addEventListener("input", handleTitleColourPickerSet, false);
+
+            var cvWidth = canvas.width;     // get the width and height so we can clear the canvas
+            var cvHeight = canvas.height;
+
+            var img = new Image();              // holds the background image uploaded by the user
+            var backgroundImageReady = false;   // indicates if the user selected image has been loaded yet (i.e. is ready for drawing)
+            var zoom = 1;                       // the zoom on the background image
+            var imageStartX = 0;                // x position to start drawing the background image
+            var imageStartY = 0;                // y position to start drawing the background image
+            var draggingImage = false;          // indicates if the user is currently dragging their mouse
+            var lastDragCoordinates = {x:0,y:0} // the co-ordinates where the mouse was last seen during a drag
+            var titleColour = "#000000";        // the colour of the title text
+
+            function handleTitleColourPickerSet(event) {
+                titleColour = event.target.value
+            }
+
+            function handleMouseDown(event) {
+                lastDragCoordinates.x = event.pageX;
+                lastDragCoordinates.y = event.pageY;
+                draggingImage = true;
+                canvas.classList.add("dragging");
+            }
+            function handleMouseUp(event) {
+                draggingImage = false;
+                canvas.classList.remove("dragging");
+            }
+            function handleMouseMove(event) {
+                if(draggingImage) {
+                    let deltaX = event.pageX - lastDragCoordinates.x;
+                    let deltaY = event.pageY - lastDragCoordinates.y;
+                    imageStartX = imageStartX + deltaX;
+                    imageStartY = imageStartY + deltaY;
+                    lastDragCoordinates.x = event.pageX;
+                    lastDragCoordinates.y = event.pageY;
+                }
+            }
+
+
+            function handleZoomIn() {
+                zoom = zoom + 0.1;
+            }
+            function handleZoomOut() {
+                zoom = zoom - 0.1;
+                if(zoom <= 0) {
+                    zoom = 0.1;
+                    alert("can't zoom out further")
+                }
+            }
+
+            function handleImage(e){
+                var reader = new FileReader();
+                reader.onload = function(event){
+                    img.onload = function(){
+                        backgroundImageReady = true;
+                    }
+                    img.src = event.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);     
+            }
+
+            function drawTitle() {
+                ctx.fillStyle = titleColour;
+                ctx.font = "100px serif";
+                ctx.fillText("G", 10, 100);
+                ctx.font = "70px serif";
+                ctx.fillText("EOGRAPHIC", 85, 100);
+                ctx.font = "18px serif";
+                ctx.fillText("NEW ZEALAND", 85, 45);    // todo the font for this is wrong
+            }
+
+            // looping is a bit unnecessary
+            function drawLoop() {
+                // clear canvas
+                ctx.clearRect(0, 0, cvWidth, cvHeight);
+                
+                // draw everything
+                if(backgroundImageReady) {
+                    ctx.drawImage(img,imageStartX,imageStartY,img.width*zoom,img.height*zoom);
+                }
+                drawTitle()
+
+                // call again next time we can draw
+                requestAnimationFrame(drawLoop);
+            }
+
+            drawLoop();
+        </script>
+    </body>
+</html>
