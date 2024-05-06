@@ -35,6 +35,11 @@
             canvas.addEventListener('mousedown', handleMouseDown, false);
             document.getElementById('body').addEventListener('mouseup', handleMouseUp, false);
             document.getElementById('body').addEventListener('mousemove', handleMouseMove, false);
+
+            
+            canvas.addEventListener('mouseenter', handleCanvasMouseIn, false);
+            canvas.addEventListener('mouseout', handleCanvasMouseOut, false);
+
             document.getElementById('titleColourPicker').addEventListener("input", handleTitleColourPickerSet, false);
 
             document.getElementById('articleText1').addEventListener('change', handleArticleTextChange, false);
@@ -47,6 +52,8 @@
             var cvHeight = canvas.height;
 
             var img = new Image();              // holds the background image uploaded by the user
+            var moveIconImg = new Image();
+            moveIconImg.src = "images/moveIcon.png";
             var backgroundImageReady = false;   // indicates if the user selected image has been loaded yet (i.e. is ready for drawing)
             var zoom = 1;                       // the zoom on the background image
             var imageStartX = 0;                // x position to start drawing the background image
@@ -61,21 +68,40 @@
             var articleText3 = "";
             var leadText = "";
 
+            var editMode = false;
+            var draggingLeadText = false;
+
             function handleTitleColourPickerSet(event) {
                 titleColour = event.target.value
             }
-
+            function handleCanvasMouseIn() {
+                editMode = true;
+            }
+            function handleCanvasMouseOut() {
+                editMode = false;
+            }
             function handleMouseDown(event) {
                 lastDragCoordinates.x = event.pageX;
                 lastDragCoordinates.y = event.pageY;
-                draggingImage = true;
+                // this needs a switch to do either image or lead text
+                draggingLeadText = true;
                 canvas.classList.add("dragging");
             }
             function handleMouseUp(event) {
                 draggingImage = false;
+                draggingLeadText = false;
                 canvas.classList.remove("dragging");
             }
             function handleMouseMove(event) {
+                // todo ugh
+                if(draggingLeadText) {
+                    let deltaX = event.pageX - lastDragCoordinates.x;
+                    let deltaY = event.pageY - lastDragCoordinates.y;
+                    leadTextCoordinates.x = leadTextCoordinates.x + deltaX;
+                    leadTextCoordinates.y = leadTextCoordinates.y + deltaY;
+                    lastDragCoordinates.x = event.pageX;
+                    lastDragCoordinates.y = event.pageY;
+                }
                 if(draggingImage) {
                     let deltaX = event.pageX - lastDragCoordinates.x;
                     let deltaY = event.pageY - lastDragCoordinates.y;
@@ -84,6 +110,7 @@
                     lastDragCoordinates.x = event.pageX;
                     lastDragCoordinates.y = event.pageY;
                 }
+            
             }
 
 
@@ -146,6 +173,11 @@
                 for(let x = 0; x < lines.length; x++) {
                     ctx.fillText(lines[x], leadTextCoordinates.x, yPos);
                     yPos = yPos + 30;
+                }
+                if(editMode) {
+                    console.log("drawing icon")
+                    let imageSize = 30;
+                    ctx.drawImage(moveIconImg,leadTextCoordinates.x - (imageSize / 2),leadTextCoordinates.y - (imageSize / 2),imageSize,imageSize);
                 }
             }
 
