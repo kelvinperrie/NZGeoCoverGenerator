@@ -17,10 +17,10 @@
         <button id="zoomIn">zoom background in</button>
         <button id="zoomOut">zoom background out</button><br/>
         Title colour: <input type="color" id="titleColourPicker" name="titleColourPicker" value="#000000" /><br/>
-        Lead text: <textarea id="leadText">The photo of&#13;&#10;the generation?</textarea><br/>
-        Article 1 text: <textarea id="articleText1">The first&#13;&#10;article text</textarea><br/>
-        Article 2 text: <textarea id="articleText2">The second&#13;&#10;article text&#13;&#10;is here!</textarea><br/>
-        Article 3 text: <textarea id="articleText3">The third&#13;&#10;article text</textarea><br/>
+        Lead text: <textarea id="leadText">The photo of&#13;&#10;the generation?</textarea><button id="leadTextIncrease">Make bigger</button><button id="leadTextDecrease">Make small</button><br/>
+        Article 1 text: <textarea id="articleText1">What could&#13;&#10;it be?</textarea><br/>
+        Article 2 text: <textarea id="articleText2">Is it&#13;&#10;just a blur?</textarea><br/>
+        Article 3 text: <textarea id="articleText3">No!&#13;&#10;definitely pengiun!</textarea><br/>
         <canvas id="imageCanvas" width="500" height="655"></canvas>
         <script>
             var canvas = document.getElementById('imageCanvas');
@@ -47,6 +47,9 @@
             document.getElementById('articleText3').addEventListener('change', handleArticleTextChange, false);
             document.getElementById('leadText').addEventListener('change', handleArticleTextChange, false);
 
+            document.getElementById('leadTextIncrease').addEventListener('click', handleLeadTextSizeIncrease, false);
+            document.getElementById('leadTextDecrease').addEventListener('click', handleLeadTextSizeDecrease, false);
+
 
             var cvWidth = canvas.width;     // get the width and height so we can clear the canvas
             var cvHeight = canvas.height;
@@ -67,6 +70,7 @@
             var articleText2 = "";
             var articleText3 = "";
             var leadText = "";
+            var leadTextSize = 30;
 
             var editMode = false;
             var draggingLeadText = false;
@@ -84,13 +88,31 @@
                 lastDragCoordinates.x = event.pageX;
                 lastDragCoordinates.y = event.pageY;
                 // this needs a switch to do either image or lead text
-                draggingLeadText = true;
+                // console.log("page: " + event.pageX + ", " + event.pageY)
+                // console.log("text: " + leadTextCoordinates.x + ", " + leadTextCoordinates.y)
+                var rect = canvas.getBoundingClientRect();
+                console.log("page: " + event.pageX + ", " + event.pageY)
+                console.log("text: " + leadTextCoordinates.x + ", " + (leadTextCoordinates.y + 15 + rect.top + window.scrollY))
+                if( (event.pageX < (leadTextCoordinates.x + 15)) && (event.pageX > (leadTextCoordinates.x - 15)) &&
+                (event.pageY < (leadTextCoordinates.y + 15 + rect.top + window.scrollY)) && (event.pageY > (leadTextCoordinates.y - 15 + rect.top + window.scrollY))) 
+                {
+                    draggingLeadText = true;
+                } else {
+                    draggingImage = true;
+                }
+                
                 canvas.classList.add("dragging");
             }
             function handleMouseUp(event) {
                 draggingImage = false;
                 draggingLeadText = false;
                 canvas.classList.remove("dragging");
+            }
+            function handleLeadTextSizeIncrease() {
+                leadTextSize = leadTextSize + 2;
+            }
+            function handleLeadTextSizeDecrease() {
+                leadTextSize = leadTextSize - 2;
             }
             function handleMouseMove(event) {
                 // todo ugh
@@ -166,16 +188,15 @@
                 }
             }
             function drawLeadText() {
-                ctx.font = "30px Arial";
+                ctx.font = leadTextSize + "px Arial";
                 ctx.textAlign = "center";
                 var lines = leadText.split("\n");
                 let yPos = leadTextCoordinates.y;
                 for(let x = 0; x < lines.length; x++) {
                     ctx.fillText(lines[x], leadTextCoordinates.x, yPos);
-                    yPos = yPos + 30;
+                    yPos = yPos + leadTextSize;
                 }
                 if(editMode) {
-                    console.log("drawing icon")
                     let imageSize = 30;
                     ctx.drawImage(moveIconImg,leadTextCoordinates.x - (imageSize / 2),leadTextCoordinates.y - (imageSize / 2),imageSize,imageSize);
                 }
