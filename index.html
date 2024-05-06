@@ -17,6 +17,10 @@
         <button id="zoomIn">zoom background in</button>
         <button id="zoomOut">zoom background out</button><br/>
         Title colour: <input type="color" id="titleColourPicker" name="titleColourPicker" value="#000000" /><br/>
+        Lead text: <textarea id="leadText">The photo of&#13;&#10;the generation?</textarea><br/>
+        Article 1 text: <textarea id="articleText1">The first&#13;&#10;article text</textarea><br/>
+        Article 2 text: <textarea id="articleText2">The second&#13;&#10;article text&#13;&#10;is here!</textarea><br/>
+        Article 3 text: <textarea id="articleText3">The third&#13;&#10;article text</textarea><br/>
         <canvas id="imageCanvas" width="500" height="655"></canvas>
         <script>
             var canvas = document.getElementById('imageCanvas');
@@ -33,6 +37,12 @@
             document.getElementById('body').addEventListener('mousemove', handleMouseMove, false);
             document.getElementById('titleColourPicker').addEventListener("input", handleTitleColourPickerSet, false);
 
+            document.getElementById('articleText1').addEventListener('change', handleArticleTextChange, false);
+            document.getElementById('articleText2').addEventListener('change', handleArticleTextChange, false);
+            document.getElementById('articleText3').addEventListener('change', handleArticleTextChange, false);
+            document.getElementById('leadText').addEventListener('change', handleArticleTextChange, false);
+
+
             var cvWidth = canvas.width;     // get the width and height so we can clear the canvas
             var cvHeight = canvas.height;
 
@@ -44,6 +54,12 @@
             var draggingImage = false;          // indicates if the user is currently dragging their mouse
             var lastDragCoordinates = {x:0,y:0} // the co-ordinates where the mouse was last seen during a drag
             var titleColour = "#000000";        // the colour of the title text
+            var leadTextCoordinates = {x:cvWidth/2,y:cvHeight/2}
+
+            var articleText1 = "";
+            var articleText2 = "";
+            var articleText3 = "";
+            var leadText = "";
 
             function handleTitleColourPickerSet(event) {
                 titleColour = event.target.value
@@ -93,14 +109,44 @@
                 reader.readAsDataURL(e.target.files[0]);     
             }
 
+            function handleArticleTextChange() {
+                articleText1 = document.getElementById('articleText1').value;
+                articleText2 = document.getElementById('articleText2').value;
+                articleText3 = document.getElementById('articleText3').value;
+                leadText = document.getElementById('leadText').value;
+            }
+            handleArticleTextChange();  // update the first time
+
             function drawTitle() {
+                ctx.textAlign = "left";
                 ctx.fillStyle = titleColour;
                 ctx.font = "100px serif";
                 ctx.fillText("G", 10, 100);
                 ctx.font = "70px serif";
                 ctx.fillText("EOGRAPHIC", 85, 100);
-                ctx.font = "18px serif";
+                ctx.font = "bold 16px Arial";
                 ctx.fillText("NEW ZEALAND", 85, 45);    // todo the font for this is wrong
+            }
+
+            function drawArticleText(articleText, xPos, startY) {
+                var lines = articleText.split("\n");
+                let yPos = startY;
+                for(let x = lines.length-1; x >= 0; x--) {
+                    ctx.font = "bold 15px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText(lines[x], xPos, yPos);
+                    yPos = yPos - 20;
+                }
+            }
+            function drawLeadText() {
+                ctx.font = "30px Arial";
+                ctx.textAlign = "center";
+                var lines = leadText.split("\n");
+                let yPos = leadTextCoordinates.y;
+                for(let x = 0; x < lines.length; x++) {
+                    ctx.fillText(lines[x], leadTextCoordinates.x, yPos);
+                    yPos = yPos + 30;
+                }
             }
 
             // looping is a bit unnecessary
@@ -112,7 +158,11 @@
                 if(backgroundImageReady) {
                     ctx.drawImage(img,imageStartX,imageStartY,img.width*zoom,img.height*zoom);
                 }
-                drawTitle()
+                drawTitle();
+                drawLeadText();
+                drawArticleText(articleText1, cvWidth / 5, cvHeight - 50)
+                drawArticleText(articleText2, cvWidth / 2, cvHeight - 50)
+                drawArticleText(articleText3, cvWidth * 4/5, cvHeight - 50)
 
                 // call again next time we can draw
                 requestAnimationFrame(drawLoop);
