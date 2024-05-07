@@ -57,6 +57,8 @@
             var img = new Image();              // holds the background image uploaded by the user
             var moveIconImg = new Image();
             moveIconImg.src = "images/moveIcon.png";
+            var barCodeImg = new Image();
+            barCodeImg.src = "images/barCode.png";
             var backgroundImageReady = false;   // indicates if the user selected image has been loaded yet (i.e. is ready for drawing)
             var zoom = 1;                       // the zoom on the background image
             var imageStartX = 0;                // x position to start drawing the background image
@@ -71,6 +73,10 @@
             var articleText3 = "";
             var leadText = "";
             var leadTextSize = 30;
+
+            const month = new Date().toLocaleString('default', { month: 'long' });
+            const year = new Date().getFullYear()
+            var issueText = month + " " + year;
 
             var editMode = false;
             var draggingLeadText = false;
@@ -87,13 +93,13 @@
             function handleMouseDown(event) {
                 lastDragCoordinates.x = event.pageX;
                 lastDragCoordinates.y = event.pageY;
-                // this needs a switch to do either image or lead text
-                // console.log("page: " + event.pageX + ", " + event.pageY)
-                // console.log("text: " + leadTextCoordinates.x + ", " + leadTextCoordinates.y)
+                // depending on where the user has clicked we are either moving the background image or
+                // the lead text - check to see if they clicked in the center of the lead text where the
+                // move icon is
                 var rect = canvas.getBoundingClientRect();
-                console.log("page: " + event.pageX + ", " + event.pageY)
-                console.log("text: " + leadTextCoordinates.x + ", " + (leadTextCoordinates.y + 15 + rect.top + window.scrollY))
-                if( (event.pageX < (leadTextCoordinates.x + 15)) && (event.pageX > (leadTextCoordinates.x - 15)) &&
+                // console.log("page: " + event.pageX + ", " + event.pageY)
+                // console.log("text: " + leadTextCoordinates.x + ", " + (leadTextCoordinates.y + 15 + rect.top + window.scrollY))
+                if( (event.pageX < (leadTextCoordinates.x + 15 + rect.left)) && (event.pageX > (leadTextCoordinates.x - 15 + rect.left)) &&
                 (event.pageY < (leadTextCoordinates.y + 15 + rect.top + window.scrollY)) && (event.pageY > (leadTextCoordinates.y - 15 + rect.top + window.scrollY))) 
                 {
                     draggingLeadText = true;
@@ -115,26 +121,19 @@
                 leadTextSize = leadTextSize - 2;
             }
             function handleMouseMove(event) {
-                // todo ugh
+                let deltaX = event.pageX - lastDragCoordinates.x;
+                let deltaY = event.pageY - lastDragCoordinates.y;
                 if(draggingLeadText) {
-                    let deltaX = event.pageX - lastDragCoordinates.x;
-                    let deltaY = event.pageY - lastDragCoordinates.y;
                     leadTextCoordinates.x = leadTextCoordinates.x + deltaX;
                     leadTextCoordinates.y = leadTextCoordinates.y + deltaY;
-                    lastDragCoordinates.x = event.pageX;
-                    lastDragCoordinates.y = event.pageY;
                 }
                 if(draggingImage) {
-                    let deltaX = event.pageX - lastDragCoordinates.x;
-                    let deltaY = event.pageY - lastDragCoordinates.y;
                     imageStartX = imageStartX + deltaX;
                     imageStartY = imageStartY + deltaY;
-                    lastDragCoordinates.x = event.pageX;
-                    lastDragCoordinates.y = event.pageY;
                 }
-            
+                lastDragCoordinates.x = event.pageX;
+                lastDragCoordinates.y = event.pageY;
             }
-
 
             function handleZoomIn() {
                 zoom = zoom + 0.1;
@@ -174,7 +173,7 @@
                 ctx.font = "70px serif";
                 ctx.fillText("EOGRAPHIC", 85, 100);
                 ctx.font = "bold 16px Arial";
-                ctx.fillText("NEW ZEALAND", 85, 45);    // todo the font for this is wrong
+                ctx.fillText("NEW ZEALAND", 85, 45);
             }
 
             function drawArticleText(articleText, xPos, startY) {
@@ -202,6 +201,16 @@
                 }
             }
 
+            function drawPageChrome() {
+                ctx.drawImage(barCodeImg,0, cvHeight - 100);
+                ctx.save();
+                ctx.font = "10px Arial";
+                ctx.translate(20, 500);
+                ctx.rotate(-Math.PI/2);
+                ctx.fillText(issueText, 0, 0);
+                ctx.restore();
+            }
+
             // looping is a bit unnecessary
             function drawLoop() {
                 // clear canvas
@@ -211,6 +220,7 @@
                 if(backgroundImageReady) {
                     ctx.drawImage(img,imageStartX,imageStartY,img.width*zoom,img.height*zoom);
                 }
+                drawPageChrome();
                 drawTitle();
                 drawLeadText();
                 drawArticleText(articleText1, cvWidth / 5, cvHeight - 50)
