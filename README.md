@@ -1,7 +1,7 @@
 # NZ Geographic Cover Generator
 
 
-This lets you make your own NZ Geographic covers from your own fantastic photos.
+This lets you make your own NZ Geographic covers from your own fantastic photos. This is classic js and html canvas.
 
 https://nzgeocovergenerator.vercel.app/
 
