@@ -3,6 +3,10 @@
     <head>
         <title>cover maker</title>
         <style>
+            html, input, textarea {
+                font-family: "tahoma", sans-serif;
+                font-size: 14px;
+            }
             canvas {
                 border: 1px black solid;
                 cursor: grab;
@@ -10,23 +14,122 @@
             canvas.dragging {
                 cursor: grabbing;
             }
+            .row {
+                display: flex;
+                flex-wrap: wrap;
+            }
+            .col {
+                margin: 5px; 
+            }
+            .panel {
+                padding: 15px;
+                margin: 5px;
+                background-color: #ff8484;
+                text-align: center;
+                position: relative;
+            }
+            .stepNumber {
+                font-size: 40px;
+                padding: 10px;
+                padding-right: 20px;
+                vertical-align: middle;
+            }
+            .stepInstructions {
+                text-align: left;
+                width: 100%;
+                margin-bottom: 15px;
+            }
+            textarea {
+                vertical-align: middle;
+            }
+            .githubLink {
+                position: absolute;
+                right: 10px;
+                bottom: 10px;
+            }
+            .button-8 {
+                background-color: #e1ecf4;
+                border-radius: 3px;
+                border: 1px solid #7aa7c7;
+                box-shadow: rgba(255, 255, 255, .7) 0 1px 0 0 inset;
+                box-sizing: border-box;
+                color: #39739d;
+                cursor: pointer;
+                display: inline-block;
+                font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
+                font-size: 13px;
+                font-weight: 400;
+                line-height: 1.15385;
+                margin: 0;
+                outline: none;
+                padding: 8px .8em;
+                position: relative;
+                text-align: center;
+                text-decoration: none;
+                user-select: none;
+                -webkit-user-select: none;
+                touch-action: manipulation;
+                vertical-align: baseline;
+                white-space: nowrap;
+            }
+
+            .button-8:hover,
+            .button-8:focus {
+                background-color: #b3d3ea;
+                color: #2c5777;
+            }
+
+            .button-8:focus {
+                box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
+            }
+
+            .button-8:active {
+                background-color: #a0c7e4;
+                box-shadow: none;
+                color: #2c5777;
+            }
         </style>
     </head>
     <body id="body">
-        <input type="file" id="imageLoader" name="imageLoader"/><br/>
-        <button id="zoomIn">zoom background in</button>
-        <button id="zoomOut">zoom background out</button><br/>
-        Title colour: <input type="color" id="titleColourPicker" name="titleColourPicker" value="#000000" /><br/>
-        Lead text: <textarea id="leadText">The photo of&#13;&#10;the generation?</textarea><button id="leadTextIncrease">Make bigger</button><button id="leadTextDecrease">Make small</button><br/>
-        Article 1 text: <textarea id="articleText1">What could&#13;&#10;it be?</textarea><br/>
-        Article 2 text: <textarea id="articleText2">Is it&#13;&#10;just a blur?</textarea><br/>
-        Article 3 text: <textarea id="articleText3">No!&#13;&#10;definitely pengiun!</textarea><br/>
-        <button id="download">download image</button><br/>
-        <canvas id="imageCanvas" width="500" height="655"></canvas>
+        <div class="row">
+            <div class="col">
+                <canvas id="imageCanvas" width="500" height="655"></canvas>
+            </div>
+            <div class="col">
+                <div class="panel">
+                    <div class="stepInstructions">
+                        <span class="stepNumber">1.</span><span class="instructions">Upload the image you want on the cover.</span>
+                    </div>
+                    <input type="file" id="imageLoader" name="imageLoader" class="button-8"/><br/><br/>
+                    <button id="zoomIn" class="button-8">zoom background in</button>
+                    <button id="zoomOut" class="button-8">zoom background out</button><br/>
+                </div>
+                <div class="panel">
+                    <div class="stepInstructions">
+                        <span class="stepNumber">2.</span><span class="instructions">Update the text and colour.</span>
+                    </div>
+                    Title colour: <input type="color" id="titleColourPicker" name="titleColourPicker" value="#000000" /><br/>
+                    Lead text: <textarea id="leadText">The photo of&#13;&#10;the generation?</textarea><br/>
+                    <button id="leadTextIncrease" class="button-8">Make bigger</button><button id="leadTextDecrease" class="button-8">Make smaller</button><br/>
+                    Article 1 text: <textarea id="articleText1">What could&#13;&#10;it be?</textarea><br/>
+                    Article 2 text: <textarea id="articleText2">Is it&#13;&#10;just a blur?</textarea><br/>
+                    Article 3 text: <textarea id="articleText3">No!&#13;&#10;definitely pengiun!</textarea><br/>
+                </div>
+                <div class="panel">
+                    <div class="stepInstructions">
+                        <span class="stepNumber">3.</span><span class="instructions">Download your image.</span>
+                    </div>
+                    <button id="download" class="button-8">download image</button><br/>
+                    <a class="githubLink" target="_blank" href="https://github.com/kelvinperrie/NZGeoCoverGenerator" title="See the repository on github"><img alt="github icon" src="images/GitHub-Mark-32px.png" /></a>
+                </div>
+            </div>
+          </div>
+        
         <script>
             var canvas = document.getElementById('imageCanvas');
             var ctx = canvas.getContext('2d');
 
+            // look at us with the retro js
             document.getElementById('imageLoader').addEventListener('change', handleImage, false);
             document.getElementById('zoomIn').addEventListener('click', handleZoomIn, false);
             document.getElementById('zoomOut').addEventListener('click', handleZoomOut, false);
@@ -58,15 +161,15 @@
 
             var img = new Image();              // holds the background image uploaded by the user
             img.crossorigin="anonymous";
-            var moveIconImg = new Image();
+            var moveIconImg = new Image();      // image for the icon that indicates the text can be moved
             moveIconImg.src = "data:image/png;base64,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";
-            var barCodeImg = new Image();
+            var barCodeImg = new Image();       // image of the barcode
             barCodeImg.src = "data:image/png;base64,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";
             var backgroundImageReady = false;   // indicates if the user selected image has been loaded yet (i.e. is ready for drawing)
             var zoom = 1;                       // the zoom on the background image
             var imageStartX = 0;                // x position to start drawing the background image
             var imageStartY = 0;                // y position to start drawing the background image
-            var draggingImage = false;          // indicates if the user is currently dragging their mouse
+            var draggingImage = false;          // indicates if the user is currently dragging the background image
             var lastDragCoordinates = {x:0,y:0} // the co-ordinates where the mouse was last seen during a drag
             var titleColour = "#000000";        // the colour of the title text
             var leadTextCoordinates = {x:cvWidth/2,y:cvHeight/2}
@@ -79,10 +182,10 @@
 
             const month = new Date().toLocaleString('default', { month: 'long' });
             const year = new Date().getFullYear()
-            var issueText = month + " " + year;
+            var issueText = month + " " + year; 
 
-            var editMode = false;
-            var draggingLeadText = false;
+            var editMode = false;               // indicates if we are in 'edit' mode, which is essentially if they have the mouse over the canvas. If true then we show edit controls (theres only one)
+            var draggingLeadText = false;       // indicates if the user is currently dragging the lead text
 
             function handleTitleColourPickerSet(event) {
                 titleColour = event.target.value
@@ -126,6 +229,7 @@
             function handleMouseMove(event) {
                 let deltaX = event.pageX - lastDragCoordinates.x;
                 let deltaY = event.pageY - lastDragCoordinates.y;
+                // move a different thing depending on what we're dragging
                 if(draggingLeadText) {
                     leadTextCoordinates.x = leadTextCoordinates.x + deltaX;
                     leadTextCoordinates.y = leadTextCoordinates.y + deltaY;
@@ -213,23 +317,16 @@
                 ctx.fillText(issueText, 0, 0);
                 ctx.restore();
             }
-            var downloadSelected = false;
+
             function downloadImage() {
-                downloadSelected = true;
-            }
-
-            function downloadImageActual(trg) {
-
-                //var canvas = document.getElementById(trg);
                 var dataUrl = canvas.toDataURL("image/png");
                 var link = document.createElement('a');
-                link.download = "my-image.png";
+                link.download = "NZGeographicCover.png";
                 link.href = dataUrl.replace("image/png", "image/octet-stream");
-                console.log(link);
                 link.click();
             }
 
-            // looping is a bit unnecessary
+            // looping is a bit unnecessary, but fun
             function drawLoop() {
                 // clear canvas
                 ctx.clearRect(0, 0, cvWidth, cvHeight);
@@ -246,15 +343,10 @@
                 drawArticleText(articleText3, cvWidth * 4/5, cvHeight - 50)
 
                 // call again next time we can draw
-                if(downloadSelected) {
-                    downloadImageActual();
-                    downloadSelected = false;
-                }// else {
-                    requestAnimationFrame(drawLoop);
-                //}
+                requestAnimationFrame(drawLoop);
             }
-
             drawLoop();
+
         </script>
     </body>
 </html>
